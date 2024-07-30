@@ -4,7 +4,7 @@ const { deleteFile } = require('../../utils/deleteFile');
 const Event = require('../models/events');
 const mongoose = require('mongoose');
 const User = require('../models/users');
-// Obtener todos los eventos
+
 const getEvents = async (req, res, next) => {
   try {
     const allEvents = await Event.find()
@@ -44,27 +44,24 @@ const getEventById = async (req, res, next) => {
 
 const createEvent = async (req, res, next) => {
   try {
-    console.log(req.body); // Esto te ayudará a depurar y ver qué datos se están recibiendo
+    console.log(req.body);
 
     // Validar campos requeridos
     if (!req.body.title || !req.body.description || !req.body.date) {
       return res.status(400).json({ error: 'Campos requeridos faltantes' });
     }
 
-    // Crear el nuevo evento
     const newEvent = new Event({
       title: req.body.title,
       description: req.body.description,
       date: req.body.date,
-      createdBy: req.body.createdBy, // Asignar el ID del creador
+      createdBy: req.body.createdBy,
     });
 
-    // Agregar URL de la imagen si existe
     if (req.file) {
-      newEvent.imageUrl = req.file.path; // Asignar la ruta del archivo cargado
+      newEvent.imageUrl = req.file.path;
     }
 
-    // Guardar el evento
     const eventSaved = await newEvent.save();
     return res.status(201).json(eventSaved);
   } catch (err) {
@@ -75,7 +72,6 @@ const createEvent = async (req, res, next) => {
   }
 };
 
-// Modificar un evento
 const updateEvent = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -110,7 +106,6 @@ const updateEvent = async (req, res, next) => {
   }
 };
 
-// Eliminar un evento
 const deleteEvent = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -199,7 +194,6 @@ const removeAttendant = async (req, res, next) => {
         .json({ error: 'ID de evento o usuario no válido' });
     }
 
-    // Buscar el evento por ID y poblar la lista de asistentes
     const event = await Event.findById(eventId).populate(
       'attendants',
       'userName'
@@ -255,7 +249,6 @@ const getAttendeesByEvent = async (req, res, next) => {
   try {
     const { eventId } = req.params;
 
-    // Verificar si el eventId es un ObjectId válido
     if (!mongoose.Types.ObjectId.isValid(eventId)) {
       return res.status(400).json({ error: 'ID de evento no válido' });
     }
@@ -275,10 +268,6 @@ const getAttendeesByEvent = async (req, res, next) => {
     console.error('Error al obtener asistentes para el evento:', error);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
-};
-
-module.exports = {
-  getAttendeesByEvent,
 };
 
 module.exports = {

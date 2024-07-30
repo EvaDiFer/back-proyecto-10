@@ -6,11 +6,9 @@ const Event = require('../models/events');
 const cloudinary = require('cloudinary').v2;
 const { deleteFile } = require('../../utils/deleteFile');
 
-// Obtener todos los usuarios
 const getUsers = async (req, res) => {
   try {
-    // Población de eventos para obtener detalles en lugar de solo IDs
-    const users = await User.find().populate('attendingEvents', 'title'); // 'title' es el campo del evento que quieres
+    const users = await User.find().populate('attendingEvents', 'title');
     return res.status(200).json(users);
   } catch (error) {
     return res
@@ -19,7 +17,6 @@ const getUsers = async (req, res) => {
   }
 };
 
-module.exports = { getUsers };
 const getUserById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -42,7 +39,6 @@ const getUserById = async (req, res, next) => {
   }
 };
 
-// Registrar un nuevo usuario
 const register = async (req, res, next) => {
   try {
     const { userName, password, email } = req.body;
@@ -76,7 +72,6 @@ const register = async (req, res, next) => {
   }
 };
 
-// Iniciar sesión de usuario
 const login = async (req, res, next) => {
   try {
     const { userName, password } = req.body;
@@ -99,7 +94,6 @@ const login = async (req, res, next) => {
   }
 };
 
-// Eliminar un usuario
 const deleteUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
