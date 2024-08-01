@@ -114,31 +114,23 @@ const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    // Obtener el usuario actual para acceder a la URL de la imagen de perfil existente
     const currentUser = await User.findById(id);
     if (!currentUser) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    // Crear el objeto de datos de actualización dinámicamente
     const updateData = { ...req.body };
 
-    // Imprimir los datos recibidos para depuración
-    console.log('Datos recibidos para actualización:', req.body);
-    console.log(
-      'Archivo recibido:',
-      req.file ? req.file.path : 'No se recibió archivo'
-    );
+    const isAdmin = currentUser.role === 'admin';
 
-    // Si se ha subido una imagen, añadir la URL de la imagen al objeto de actualización
+    if (!isAdmin) {
+      delete updateData.role; //añadida condición: si no es admin, el campo rol se elimina.
+    }
+
     if (req.file) {
-      // Guardar la URL de la imagen anterior
       const oldImageUrl = currentUser.profileImageUrl;
-
-      // Actualizar con la nueva URL de la imagen
       updateData.profileImageUrl = req.file.path;
 
-      // Eliminar la imagen anterior de Cloudinary si existía
       if (oldImageUrl) {
         try {
           await deleteFile(oldImageUrl);
@@ -151,13 +143,7 @@ const updateUser = async (req, res, next) => {
       }
     }
 
-    // Verificar y actualizar la contraseña
     if (req.body.currentPassword && req.body.newPassword) {
-      // Imprimir la contraseña actual y nueva para depuración
-      console.log('Contraseña actual recibida:', req.body.currentPassword);
-      console.log('Nueva contraseña recibida:', req.body.newPassword);
-
-      // Verificar que la contraseña actual es correcta
       const isMatch = await bcrypt.compare(
         req.body.currentPassword,
         currentUser.password
@@ -166,12 +152,8 @@ const updateUser = async (req, res, next) => {
         return res.status(400).json({ error: 'Contraseña actual incorrecta' });
       }
 
-      // Asegúrate de que la nueva contraseña no esté vacía
       if (req.body.newPassword.trim() !== '') {
         updateData.password = bcrypt.hashSync(req.body.newPassword, 10);
-
-        // Imprimir la nueva contraseña encriptada para depuración
-        console.log('Nueva contraseña encriptada:', updateData.password);
       } else {
         return res
           .status(400)
@@ -179,7 +161,6 @@ const updateUser = async (req, res, next) => {
       }
     }
 
-    // Actualizar el usuario en la base de datos
     const updatedUser = await User.findByIdAndUpdate(id, updateData, {
       new: true,
     });
